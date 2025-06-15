@@ -1,0 +1,232 @@
+{
+  "name": "garage",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "265939ed-eec9-4291-9d94-214eba0cb825",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -20
+      ],
+      "id": "c9bbc02d-58ef-4539-ab1f-681ffb2c5d38",
+      "name": "Webhook",
+      "webhookId": "265939ed-eec9-4291-9d94-214eba0cb825"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.service }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Write a short email response confirming a customer's service request.\n\nUse this format:\n\ndont write subject\ndont write hi custumor name\n\n\nWrite 1–2 lines on why the service \"{{ $json.body.service }}\" is important. Then include this standard message:\n\nWe’ve successfully received your request, and one of our service advisors will contact you shortly to assist you further.\n\nIf you have any urgent questions, feel free to reply to this email or call us directly.\n\nBest regards,\nTeam AutoCare Garage"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -20
+      ],
+      "id": "29f399bf-5f3b-4d3e-80c4-cb59564c33c1",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        300,
+        160
+      ],
+      "id": "e7eb6008-ab7c-4068-bd6a-bde10ec05ff8",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "6Jzbt6tctKFAGJMD",
+          "name": "DeepSeek account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.email }}",
+        "subject": "It’s Service Time – Your Car Needs AutoCare Garage",
+        "message": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        920,
+        100
+      ],
+      "id": "d76faacd-83a1-474b-8b28-463dfaad557a",
+      "name": "Gmail1",
+      "webhookId": "9de4717c-2977-4f1d-bdbd-3cf468bc3e5d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "MBuCUhKz6MXXMya4",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "instructions": "write the email in proper format\nremove \\n from everywhere it should look like email\nwrite  Best regards,   Team AutoCare Garage on new line both on different one below the other\n\n",
+        "codeGeneratedForPrompt": "write the email in proper format\nremove \\n from everywhere it should look like email\nwrite  Best regards,   Team AutoCare Garage on new line both on different one below the other\n\n",
+        "jsCode": "const items = $input.all();\nconst updatedItems = items.map((item) => {\n  let output = item?.json?.output.replace(/\\n/g, \" \");\n  output = output.replace(\n    \"Best regards, Team AutoCare Garage\",\n    \"\\nBest regards, \\nTeam AutoCare Garage\",\n  );\n  item.json.output = output;\n  return item;\n});\nreturn updatedItems;\n"
+      },
+      "type": "n8n-nodes-base.aiTransform",
+      "typeVersion": 1,
+      "position": [
+        680,
+        100
+      ],
+      "id": "1943dcd3-a6ef-415a-95b1-9d4e1e7285eb",
+      "name": "AI Transform"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "14TUYKd9ZN5-je8lYPBvvXQOyyjW0QljhvOkk2Wg4I9Q",
+          "mode": "list",
+          "cachedResultName": "AutoCare Garage",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14TUYKd9ZN5-je8lYPBvvXQOyyjW0QljhvOkk2Wg4I9Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14TUYKd9ZN5-je8lYPBvvXQOyyjW0QljhvOkk2Wg4I9Q/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email id": "={{ $('Webhook').item.json.body.email }}",
+            "service type": "={{ $('Webhook').item.json.body.service }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "email id",
+              "displayName": "email id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "service type",
+              "displayName": "service type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        680,
+        -140
+      ],
+      "id": "b850e2f2-25aa-4acd-a3b1-9ea690a0ba25",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "xVlqE3UGKlVZtkfz",
+          "name": "demo lonkedin"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Transform",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Transform": {
+      "main": [
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5915054f-ac49-4e4b-9130-57176312b485",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "acfaf4a906b64d92ebd4e9022ac71578b196f5ddaa837cfb96a78e9b77e34839"
+  },
+  "id": "1R5eEtVZkf4jYjwL",
+  "tags": []
+}
